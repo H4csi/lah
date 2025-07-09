@@ -1,34 +1,28 @@
-//SUMBER SALURAN VVIP
-// https://whatsapp.com/channel/0029VawaB2bHLHQgrkwpvy2E
-
 const fs = require('fs')
 
-global.packname = 'JustinOfficial'
-global.owner = "628138134418@s.whatsapp.net"
-global.author = 'JustinOffc'
-global.namaowner = "JustinAndiar"
-global.namabot = "JustinV20 Fase2"
-global.linkch = 'https://whatsapp.com/channel/0029VawaB2bHLHQgrkwpvy2E'
-global.idch = "120363361398844773@newsletter"
+// Ganti semua di bawah ini dengan data Anda
+global.packname = 'Kunu-Bot'
+global.owner = "6285724125709@s.whatsapp.net" // <-- PENTING: Ganti dengan nomor WhatsApp Anda
+global.author = 'Kunun'
+global.namaowner = "Kunun"
+global.namabot = "Kunun Bot"
+global.linkch = '' // <-- Kosongkan jika tidak punya channel
+global.idch = ""  // <-- Kosongkan jika tidak punya channel
 
+// Bagian ini biarkan saja
 global.status = false
 global.welcome = false
 global.antispam = true
 global.autoread = false
 
 global.mess = {
-    group: "Akses Ditolak!\n\n> Add Pengguna Sebelum Akses, Atau Ganti Nomer Owner Di Bagian Config.js Agar Script Bisa Di Akses!!",
-    admin: "Akses Ditolak!\n\n> Add Pengguna Sebelum Akses, Atau Ganti Nomer Owner Di Bagian Config.js Agar Script Bisa Di Akses!!",
-    owner: "Akses Ditolak, Number Tidak Terdaftar Sebagai Owner!!\n\n> Add Pengguna Sebelum Akses, Atau Ganti Nomer Owner Di Bagian Config.js Agar Script Bisa Di Akses!!",
-    premium: "Akses DitolakNumber Tidak Terdaftar Sebagai Premium!!\n\n> Add Pengguna Sebelum Akses, Atau Ganti Nomer Owner Di Bagian Config.js Agar Script Bisa Di Akses!!",
-    botadmin: "Akses Ditolak!\n\n> Add Pengguna Sebelum Akses, Atau Ganti Nomer Owner Di Bagian Config.js Agar Script Bisa Di Akses!!",
-    private: "Akses Ditolak!\n\n> Add Pengguna Sebelum Akses, Atau Ganti Nomer Owner Di Bagian Config.js Agar Script Bisa Di Akses!!"
+    group: "Fitur ini hanya untuk grup!",
+    admin: "Fitur ini hanya untuk admin grup!",
+    owner: "Fitur ini hanya untuk Owner!",
+    premium: "Fitur ini hanya untuk member Premium!",
+    botadmin: "Jadikan bot sebagai admin terlebih dahulu!",
+    private: "Fitur ini hanya untuk chat pribadi!"
 }
 
 let file = require.resolve(__filename)
-require('fs').watchFile(file, () => {
-  require('fs').unwatchFile(file)
-  console.log('\x1b[0;32m'+__filename+' \x1b[1;32mupdated!\x1b[0m')
-  delete require.cache[file]
-  require(file)
-})
+// ... (sisa kode biarkan saja)
