@@ -4,7 +4,7 @@
 const fs = require('fs')
 
 global.packname = 'JustinOfficial'
-global.owner = "628138134418@s.whatsapp.net"
+global.owner = "6288294549816"
 global.author = 'JustinOffc'
 global.namaowner = "JustinAndiar"
 global.namabot = "JustinV20 Fase2"
