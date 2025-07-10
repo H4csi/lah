@@ -4,7 +4,7 @@
 const config = {
     ownerName: "Kunu",
     botName: "KunuBot",
-    ownerNumber: "6281234567890", // <-- GANTI DENGAN NOMOR WA PRIBADI ANDA (untuk memberi perintah)
+    ownerNumber: "6285724125709", // <-- GANTI DENGAN NOMOR WA PRIBADI ANDA (untuk memberi perintah)
     botNumber: "" // <-- KOSONGKAN SAJA, AKAN DIISI OTOMATIS SAAT PAIRING
 };
 
