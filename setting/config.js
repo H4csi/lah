@@ -1,7 +1,7 @@
 const fs = require('fs')
 
 // Ganti semua di bawah ini dengan data Anda
-global.packname = 'Kunu-Bot'
+global.packname = 'Kunun-Bot'
 global.owner = "6285724125709@s.whatsapp.net" // <-- PENTING: Ganti dengan nomor WhatsApp Anda
 global.author = 'Kunun'
 global.namaowner = "Kunun"
